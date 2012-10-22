@@ -1,0 +1,35 @@
+name                          : coproc
+version                       : 0.0.0
+category                      : Text
+license-file                  : LICENSE
+author                        : Jason Dusek
+maintainer                    : oss@solidsnack.be
+homepage                      : http://github.com/solidsnack/coproc/
+synopsis                      : Coroutine programming with processes.
+description                   :
+  A coroutine interface to interpreters like Bash and Sh on POSIX systems.
+
+cabal-version                 : >= 1.10
+build-type                    : Simple
+extra-source-files            : README
+                              , LICENSE
+
+source-repository               head
+  type                        : git
+  location                    : http://github.com/solidsnack/coproc.git
+
+
+library
+  default-language            : Haskell98
+  build-depends               : base >= 2 && <= 5
+                              , binary >= 0.5
+                              , bytestring >= 0.9
+                              , process >= 1.1
+                              , shell-escape >= 0.1.1
+                              , temporary >= 1.1
+                              , unix >= 2.5.1
+
+  exposed-modules             : System.Posix.CoProc
+                                System.Posix.CoProc.Internals
+                                System.Posix.CoProc.Shell
+

@@ -1,0 +1,20 @@
+
+A coroutine interface for interactive interpreters. One use case is extracting
+shell function definitions from source relying on the Bash's parser:
+
+  ghci> import System.Posix.CoProc
+  ghci> b <- start Bash
+    b :: Session Bash
+  ghci> print b
+    Session pid=30591 interpreter=bash [lock] [handles]
+    it :: ()
+  ghci> query b "function echo_x { echo x ;}"
+    ("","")
+    it :: (ByteString, ByteString)
+  ghci> query b "declare -F"
+    ("declare -f echo_x\n","")
+    it :: (ByteString, ByteString)
+  ghci> query b "declare -f echo_x"
+    ("echo_x () \n{ \n    echo x\n}\n","")
+    it :: (ByteString, ByteString)
+
