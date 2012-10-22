@@ -22,8 +22,11 @@ import           System.IO.Temp
 import qualified Text.ShellEscape as Esc
 
 
--- | The backend interface, which provides the core of the frontend 'start',
---   'query' and 'done' operations.
+-- | A low-level interface, in terms of handles, for interacting with a
+--   running interpreter. This interface is wrapped in the primary module to
+--   add thread safety and diagnostic information. To implement a new
+--   interpreter, simply implement this interface and use the functions in the
+--   public module as before.
 class Interpreter interpreter where
   start :: interpreter -> IO (Handle, Handle, Handle, ProcessHandle)
   query :: interpreter -> (Handle, Handle, Handle, ProcessHandle)

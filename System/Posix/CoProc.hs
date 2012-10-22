@@ -27,12 +27,17 @@ start interpreter = do
 query :: (Internals.Interpreter int) => Session int
       -> ByteString
       -> IO (ByteString, ByteString)
-query Session{..} q = withMVar lock
-                               (const (Internals.query interpreter handles q))
+query Session{..} q = (withMVar lock . const)
+                      (Internals.query interpreter handles q)
 
 done :: (Internals.Interpreter int) => Session int -> IO (CPid, ExitCode)
-done Session{..} = (pid,) <$> Internals.done interpreter handles
+done Session{..} = (withMVar lock . const)
+                   ((pid,) <$> Internals.done interpreter handles)
 
+-- | A 'Session' associates useful metadata with the handles of a running
+--   interpreter as well as a lock. The 'start', 'query' and 'done'
+--   functions work with 'Session's to ensure the thread safety of
+--   interactions of a running interpreter.
 data Session int = Session { pid :: CPid
                            , interpreter :: int
                            , handles :: (Handle, Handle, Handle, ProcessHandle)
@@ -43,7 +48,8 @@ instance (Show int) => Show (Session int) where
                                         , "[lock]", "[handles]" ]
 
 
--- | Bash as a coprocess.
+-- | Bash as a coprocess. Simply starts @bash@ with no arguments, using
+--   whatever @bash@ is first in the @PATH@.
 data Bash = Bash
 instance Show Bash where show _ = "bash"
 
