@@ -6,6 +6,7 @@ module System.Posix.CoProc.Internals where
 
 import           Control.Applicative
 import           Control.Concurrent
+import           Control.Concurrent.Async
 import           Data.Bits
 import           Data.ByteString.Char8 (ByteString)
 import qualified Data.ByteString.Char8 as Bytes
@@ -60,10 +61,7 @@ drainFIFO path = do
 -- | Read several FIFOs in the background, in parallel, returning all of their
 --   contents.
 backgroundReadFIFOs :: [ByteString] -> IO [ByteString]
-backgroundReadFIFOs theFIFOs = do
-  cells <- sequence (newEmptyMVar <$ theFIFOs)
-  sequence_ [ forkIO (drainFIFO p >>= putMVar c) | p <- theFIFOs | c <- cells ]
-  sequence (takeMVar <$> cells)
+backgroundReadFIFOs = mapConcurrently drainFIFO
 
 -- | Retrieve the PID from a process handle. Note that calling this function
 --   on a process that one has terimated or called wait for will results in an
