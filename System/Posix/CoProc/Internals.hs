@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings
            , ParallelListComp
+           , ScopedTypeVariables
            , TupleSections #-}
 -- | Backend interface and CoProc interpreter implementations.
 module System.Posix.CoProc.Internals where
@@ -17,6 +18,7 @@ import           System.IO.Error
 import           System.Process
 import           System.Process.Internals
 import           System.Posix.ByteString
+import           System.Random
 
 import           System.IO.Temp
 
@@ -42,7 +44,9 @@ close (i, o, e, p) = hClose' i *> hClose' o *> hClose' e *> waitForProcess p
 -- | Run an IO action with two FIFOs in scope, which will be removed after it
 --   completes.
 withFIFOs :: (RawFilePath -> RawFilePath -> IO a) -> IO a
-withFIFOs m = withSystemTempDirectory "hs.coproc." m'
+withFIFOs m = do
+  num :: Int <- randomIO
+  withSystemTempDirectory ("hs." ++ show num ++ ".coproc.") m'
  where m'   = (uncurry m =<<) . mk . Bytes.pack
        mk d = (o, e) <$ (createNamedPipe o mode >> createNamedPipe e mode)
         where (o, e) = (d <> "/o", d <> "/e")
@@ -68,7 +72,7 @@ backgroundReadFIFOs = mapConcurrently drainFIFO
 --   exception being thrown.
 pid :: ProcessHandle -> IO CPid
 pid handle = withProcessHandle handle getPID
- where getPID h@(OpenHandle pid) = return (h, pid)
+ where getPID (OpenHandle pid) = return pid
        getPID _ = error
         "System.CoProc.Internal.pid: Called on closed handle! Yikes!"
 

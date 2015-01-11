@@ -18,7 +18,7 @@ import qualified System.Posix.CoProc.Internals as Internals
 data Bash = Bash
 instance Show Bash where show _ = "bash"
 instance Internals.Interpreter Bash where
-  start _ = go "bash"
+  start _ = go "bash" []
   done  _ = Internals.close
   query _ handles cmd = runRedirected handles cmd
 
@@ -26,15 +26,15 @@ instance Internals.Interpreter Bash where
 data BinSh = BinSh
 instance Show BinSh where show _ = "/bin/sh"
 instance Internals.Interpreter BinSh where
-  start _ = go "/bin/sh"
+  start _ = go "/bin/sh" []
   done  _ = Internals.close
   query _ handles cmd = runRedirected handles cmd
 
 -- | Launch any Bourne-compatible shell as a coprocess.
-data BourneLike = BourneLike String
-instance Show BourneLike where show (BourneLike path) = path
+data BourneLike = BourneLike String [String]
+instance Show BourneLike where show (BourneLike path flags) = show (path:flags)
 instance Internals.Interpreter BourneLike where
-  start (BourneLike p) = go p
+  start (BourneLike path flags) = go path flags
   done  _ = Internals.close
   query _ handles cmd = runRedirected handles cmd
 
@@ -51,6 +51,6 @@ runRedirected (i,_,_,_) cmd = Internals.withFIFOs query'
                              [ob,eb] <- Internals.backgroundReadFIFOs [ofo,efo]
                              return (ob,eb)
 
--- | Launch a shell with no arguments.
-go shell = runInteractiveProcess shell [] Nothing (Just [])
+-- | Launch a shell.
+go shell flags = runInteractiveProcess shell flags Nothing (Just [])
 
