@@ -45,12 +45,11 @@ redirect (o,e) c = Bytes.unlines [ "{", c, "} 1>" <> (Esc.bytes . Esc.sh) o <>
                                             " 2>" <> (Esc.bytes . Esc.sh) e    ]
 
 -- | Setup FIFOs and run a command, capturing its output.
-runRedirected (i,_,_,_) cmd = Internals.withFIFOs query'
-   where query' ofo efo = do Bytes.hPut i (redirect (ofo,efo) cmd)
-                             hFlush i
-                             [ob,eb] <- Internals.backgroundReadFIFOs [ofo,efo]
-                             return (ob,eb)
+runRedirected (i, _, _, _) cmd = Internals.withFIFOs query'
+ where query' ofo efo = do Bytes.hPut i (redirect (ofo, efo) cmd)
+                           hFlush i
+                           [ob, eb] <- Internals.backgroundReadFIFOs [ofo, efo]
+                           return (ob, eb)
 
 -- | Launch a shell.
 go shell flags = runInteractiveProcess shell flags Nothing (Just [])
-

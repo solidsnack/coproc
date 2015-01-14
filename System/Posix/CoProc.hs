@@ -2,7 +2,8 @@
            , RecordWildCards
            , TupleSections #-}
 module System.Posix.CoProc ( start, query, done, Session(..)
-                           , Bash(..), BinSh(..), BourneLike(..) ) where
+                           , Bash(..), BinSh(..), BourneLike(..)
+                           , Python(..), Python2(..), Python3(..) ) where
 
 import           Control.Applicative
 import           Control.Concurrent.MVar
@@ -15,6 +16,7 @@ import           System.Posix.ByteString
 
 import qualified System.Posix.CoProc.Internals as Internals
 import           System.Posix.CoProc.Shell
+import           System.Posix.CoProc.Python
 
 
 start :: (Internals.Interpreter int) => int -> IO (Session int)

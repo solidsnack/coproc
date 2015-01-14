@@ -44,13 +44,13 @@ close (i, o, e, p) = hClose' i *> hClose' o *> hClose' e *> waitForProcess p
 -- | Run an IO action with two FIFOs in scope, which will be removed after it
 --   completes.
 withFIFOs :: (RawFilePath -> RawFilePath -> IO a) -> IO a
-withFIFOs m = do
-  num :: Int <- randomIO
-  withSystemTempDirectory ("hs." ++ show num ++ ".coproc.") m'
+withFIFOs m = withSystemTempDirectory ("hs.coproc.") m'
  where m'   = (uncurry m =<<) . mk . Bytes.pack
-       mk d = (o, e) <$ (createNamedPipe o mode >> createNamedPipe e mode)
-        where (o, e) = (d <> "/o", d <> "/e")
-              mode   = ownerReadMode .|. ownerWriteMode .|. namedPipeMode
+       mk d = do num :: Int <- abs <$> randomIO
+                 let o = d <> "/o." <> Bytes.pack (show num)
+                     e = d <> "/e." <> Bytes.pack (show num)
+                 (o, e) <$ (createNamedPipe o mode >> createNamedPipe e mode)
+        where mode = ownerReadMode .|. ownerWriteMode .|. namedPipeMode
 
 -- | Use @bash@+@cat@ to drain the FIFO and terminate when complete.
 drainFIFO :: ByteString -> IO ByteString
